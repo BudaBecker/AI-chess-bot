@@ -1,0 +1,9 @@
+# VSCode General
+*/.vscode
+
+# Java Engine
+java-chess-engine/bin
+java-chess-engine/lib
+java-chess-engine/README.md
+
+# Python IA
