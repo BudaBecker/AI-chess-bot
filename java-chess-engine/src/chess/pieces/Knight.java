@@ -5,15 +5,15 @@ import boardgame.Position;
 import chess.ChessPiece;
 import chess.Color;
 
-public class King extends ChessPiece {
+public class Knight extends ChessPiece {
 
-    public King(Board board, Color color) {
+    public Knight(Board board, Color color) {
         super(board, color);
     }
 
     @Override
     public String toString() {
-        return "K";
+        return "N";
     }
 
     private boolean canMove(Position position) {
@@ -26,49 +26,50 @@ public class King extends ChessPiece {
         boolean[][] movesMatrix = new boolean[getBoard().getRows()][getBoard().getColumns()];
         Position p = new Position(0, 0);
 
-        // forward
-        p.setValues(position.getRow() - 1, position.getColumn());
+        // forward-right
+        p.setValues(position.getRow() - 2, position.getColumn() + 1);
         if (getBoard().positionExists(p) && canMove(p)) {
             movesMatrix[p.getRow()][p.getColumn()] = true;
         }
-        // backward
-        p.setValues(position.getRow() + 1, position.getColumn());
-        if (getBoard().positionExists(p) && canMove(p)) {
-            movesMatrix[p.getRow()][p.getColumn()] = true;
-        }
-        // right
-        p.setValues(position.getRow(), position.getColumn() + 1);
-        if (getBoard().positionExists(p) && canMove(p)) {
-            movesMatrix[p.getRow()][p.getColumn()] = true;
-        }
-        // left
-        p.setValues(position.getRow(), position.getColumn() - 1);
+        // forward-left
+        p.setValues(position.getRow() - 2, position.getColumn() - 1);
         if (getBoard().positionExists(p) && canMove(p)) {
             movesMatrix[p.getRow()][p.getColumn()] = true;
         }
 
-        // forward-right
-        p.setValues(position.getRow() - 1, position.getColumn() + 1);
-        if (getBoard().positionExists(p) && canMove(p)) {
-            movesMatrix[p.getRow()][p.getColumn()] = true;
-        }
-        // forward-lef
-        p.setValues(position.getRow() - 1, position.getColumn() - 1);
-        if (getBoard().positionExists(p) && canMove(p)) {
-            movesMatrix[p.getRow()][p.getColumn()] = true;
-        }
         // backward-right
-        p.setValues(position.getRow() + 1, position.getColumn() + 1);
+        p.setValues(position.getRow() + 2, position.getColumn() + 1);
         if (getBoard().positionExists(p) && canMove(p)) {
             movesMatrix[p.getRow()][p.getColumn()] = true;
         }
         // backward-left
-        p.setValues(position.getRow() + 1, position.getColumn() - 1);
+        p.setValues(position.getRow() + 2, position.getColumn() - 1);
+        if (getBoard().positionExists(p) && canMove(p)) {
+            movesMatrix[p.getRow()][p.getColumn()] = true;
+        }
+
+        // right-forward
+        p.setValues(position.getRow() - 1, position.getColumn() + 2);
+        if (getBoard().positionExists(p) && canMove(p)) {
+            movesMatrix[p.getRow()][p.getColumn()] = true;
+        }
+        // right-backward
+        p.setValues(position.getRow() + 1, position.getColumn() + 2);
+        if (getBoard().positionExists(p) && canMove(p)) {
+            movesMatrix[p.getRow()][p.getColumn()] = true;
+        }
+
+        // left-forward
+        p.setValues(position.getRow() - 1, position.getColumn() - 2);
+        if (getBoard().positionExists(p) && canMove(p)) {
+            movesMatrix[p.getRow()][p.getColumn()] = true;
+        }
+        // left-backward
+        p.setValues(position.getRow() + 1, position.getColumn() - 2);
         if (getBoard().positionExists(p) && canMove(p)) {
             movesMatrix[p.getRow()][p.getColumn()] = true;
         }
 
         return movesMatrix;
     }
-
 }
