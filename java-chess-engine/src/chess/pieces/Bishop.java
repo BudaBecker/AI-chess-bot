@@ -1,65 +1,19 @@
 package chess.pieces;
 
-import boardgame.Board;
-import boardgame.Position;
-import chess.ChessPiece;
 import chess.Color;
+import chess.Piece;
 
-public class Bishop extends ChessPiece {
+public class Bishop extends Piece {
 
-    public Bishop(Board board, Color color) {
-        super(board, color);
+    public Bishop(int col, int row, Color color) {
+        super(col, row, color);
+
+        if (color == Color.WHITE) {
+            image = getImage("w_bishop");
+
+        } else {
+            image = getImage("b_bishop");
+        }
     }
 
-    @Override
-    public String toString() {
-        return "B";
-    }
-
-    @Override
-    public boolean[][] possibleMoves() {
-        boolean[][] movesMatrix = new boolean[getBoard().getRows()][getBoard().getColumns()];
-        Position p = new Position(0, 0);
-
-        // forward-right
-        p.setValues(position.getRow() - 1, position.getColumn() + 1);
-        while (getBoard().positionExists(p) && !getBoard().thereIsAPiece(p)) {
-            movesMatrix[p.getRow()][p.getColumn()] = true;
-            p.setValues(p.getRow() - 1, p.getColumn() + 1);
-        }
-        if (getBoard().positionExists(p) && isThereOpponentPiece(p)) {
-            movesMatrix[p.getRow()][p.getColumn()] = true;
-        }
-        // forward-left
-        p.setValues(position.getRow() - 1, position.getColumn() - 1);
-        while (getBoard().positionExists(p) && !getBoard().thereIsAPiece(p)) {
-            movesMatrix[p.getRow()][p.getColumn()] = true;
-            p.setValues(p.getRow() - 1, p.getColumn() - 1);
-        }
-        if (getBoard().positionExists(p) && isThereOpponentPiece(p)) {
-            movesMatrix[p.getRow()][p.getColumn()] = true;
-        }
-
-        // backward-right
-        p.setValues(position.getRow() + 1, position.getColumn() + 1);
-        while (getBoard().positionExists(p) && !getBoard().thereIsAPiece(p)) {
-            movesMatrix[p.getRow()][p.getColumn()] = true;
-            p.setValues(p.getRow() + 1, p.getColumn() + 1);
-        }
-        if (getBoard().positionExists(p) && isThereOpponentPiece(p)) {
-            movesMatrix[p.getRow()][p.getColumn()] = true;
-        }
-
-        // backward-left
-        p.setValues(position.getRow() + 1, position.getColumn() - 1);
-        while (getBoard().positionExists(p) && !getBoard().thereIsAPiece(p)) {
-            movesMatrix[p.getRow()][p.getColumn()] = true;
-            p.setValues(p.getRow() + 1, p.getColumn() - 1);
-        }
-        if (getBoard().positionExists(p) && isThereOpponentPiece(p)) {
-            movesMatrix[p.getRow()][p.getColumn()] = true;
-        }
-
-        return movesMatrix;
-    }
 }
