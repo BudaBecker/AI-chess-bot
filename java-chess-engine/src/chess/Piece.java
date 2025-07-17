@@ -30,6 +30,9 @@ public abstract class Piece {
         BufferedImage image = null;
 
         try {
+            // To package your resources into a JAR file, place the res folder inside src
+            // and use this function:
+            // image = ImageIO.read(getClass().getResourceAsStream( path ));
             image = ImageIO.read(new File("res/pieces/" + name + ".png"));
 
         } catch (IOException e) {
@@ -44,5 +47,13 @@ public abstract class Piece {
 
     public int getPosY() {
         return this.row * ChessPanel.tileSize;
+    }
+
+    public int getCol() {
+        return (this.x + ChessPanel.tileSize / 2) / ChessPanel.tileSize;
+    }
+
+    public int getRow() {
+        return (this.y + ChessPanel.tileSize / 2) / ChessPanel.tileSize;
     }
 }

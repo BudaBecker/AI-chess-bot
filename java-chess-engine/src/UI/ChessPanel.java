@@ -1,5 +1,7 @@
 package UI;
 
+import java.awt.AlphaComposite;
+import java.awt.BasicStroke;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -22,19 +24,27 @@ public class ChessPanel extends JPanel implements Runnable {
     public static final int tileSize = 100;
     public static final int screenWidth = (tileSize * 8) + 250; // Board + InfoPanel
     public static final int screenHeight = tileSize * 8;
-    final int FPS = 60;
+    final int FPS = 165;
 
     // INITIALIZE THE GAME
     Thread chessGameThread;
     BoardUI boardUI = new BoardUI();
     Color currentColor = Color.WHITE;
+    Mouse mouse = new Mouse();
+
+    // PIECES
     public static ArrayList<Piece> pieces = new ArrayList<>();
     public static ArrayList<Piece> simPieces = new ArrayList<>();
+    Piece activeP;
 
     public ChessPanel() {
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
         this.setBackground(java.awt.Color.BLACK);
         this.setDoubleBuffered(true); // improve game's rendering performance
+
+        addMouseMotionListener(mouse);
+        addMouseListener(mouse);
+
         createInitialSetup();
         copyPieces(pieces, simPieces);
     }
@@ -118,7 +128,48 @@ public class ChessPanel extends JPanel implements Runnable {
     }
 
     public void update() {
+        // MOUSE PRESSED
+        if (mouse.pressed) {
+            if (activeP == null) {
+                Piece foundPiece = null;
 
+                for (Piece piece : simPieces) {
+                    if (piece.color == currentColor
+                            && piece.col == mouse.x / tileSize
+                            && piece.row == mouse.y / tileSize) {
+
+                        foundPiece = piece;
+                        break;
+                    }
+                }
+
+                // Put the selected piece to the end of the list so it wont be hidden by other
+                // pieces
+                if (foundPiece != null) {
+                    simPieces.remove(foundPiece);
+                    simPieces.add(foundPiece);
+                    activeP = foundPiece;
+                }
+
+            } else {
+                simulate();
+            }
+        }
+
+        // MOUSE RELEASE
+        if (!mouse.pressed) {
+            if (activeP != null) {
+                activeP.x = activeP.getPosX();
+                activeP.y = activeP.getPosY();
+            }
+        }
+    }
+
+    private void simulate() {
+        activeP.x = mouse.x - tileSize / 2;
+        activeP.y = mouse.y - tileSize / 2;
+        activeP.col = activeP.getCol();
+        activeP.row = activeP.getRow();
     }
 
     public void paintComponent(Graphics g) {
@@ -127,6 +178,28 @@ public class ChessPanel extends JPanel implements Runnable {
         Graphics2D g2 = (Graphics2D) g;
 
         boardUI.drawBoard(g2);
-        boardUI.drawPieces(g2, simPieces);
+        for (Piece piece : simPieces) {
+            boardUI.drawPiece(g2, piece);
+        }
+
+        if (activeP != null) {
+            // Mark the position of the current selected piece
+            g2.setColor(java.awt.Color.CYAN);
+            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.15f));
+            g2.fillRect(activeP.preCol * tileSize, activeP.preRow * tileSize, tileSize, tileSize);
+            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
+
+            // Overlay the possible future position
+            if (mouse.pressed) {
+                g2.setColor(java.awt.Color.WHITE);
+                g2.setStroke(new BasicStroke(5f));
+                g2.drawRect(activeP.col * tileSize + 2, activeP.row * tileSize + 3, tileSize - 5, tileSize - 5);
+            }
+
+            // TODO: Mark the possibles moves for the current piece
+
+            boardUI.drawPiece(g2, activeP);
+        }
+
     }
 }
