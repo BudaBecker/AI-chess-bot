@@ -115,4 +115,43 @@ public class GameState {
         }
         return null;
     }
+
+    /**
+     * Returns true if all squares strictly between col1 and col2 on the given row are empty.
+     * Works regardless of whether col1 < col2 or col1 > col2.
+     */
+    public static boolean isPathClear(int col1, int col2, int row, ArrayList<Piece> pieces) {
+        int minCol = Math.min(col1, col2) + 1;
+        int maxCol = Math.max(col1, col2);
+        for (int c = minCol; c < maxCol; c++) {
+            for (Piece p : pieces) {
+                if (p.col == c && p.row == row) return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Returns true if ANY square in the range [col1..col2] on the given row
+     * is attacked by an enemy of the given color. Used to validate castling path safety.
+     */
+    public static boolean isPathUnderAttack(int col1, int col2, int row, Color color, ArrayList<Piece> pieces) {
+        int minCol = Math.min(col1, col2);
+        int maxCol = Math.max(col1, col2);
+        for (int c = minCol; c <= maxCol; c++) {
+            // Temporarily place a dummy king marker — just check via isSquareAttacked
+            if (isSquareAttacked(c, row, color, pieces)) return true;
+        }
+        return false;
+    }
+
+    /** Returns true if the square (col, row) is attacked by any enemy of the given color. */
+    public static boolean isSquareAttacked(int col, int row, Color friendlyColor, ArrayList<Piece> pieces) {
+        for (Piece enemy : pieces) {
+            if (enemy.color != friendlyColor && enemy.possibleMoves(pieces)[col][row]) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
