@@ -12,6 +12,10 @@ public class Mouse extends MouseAdapter {
     public boolean clicked;
     public int clickX, clickY;
 
+    // Right-click tracking for editor — consumed in update()
+    public boolean rightClicked;
+    public int rightClickX, rightClickY;
+
     @Override
     public void mousePressed(MouseEvent e) {
         pressed = true;
@@ -26,9 +30,15 @@ public class Mouse extends MouseAdapter {
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        clicked = true;
-        clickX = e.getX();
-        clickY = e.getY();
+        if (e.getButton() == MouseEvent.BUTTON1) {
+            clicked = true;
+            clickX = e.getX();
+            clickY = e.getY();
+        } else if (e.getButton() == MouseEvent.BUTTON3) {
+            rightClicked = true;
+            rightClickX = e.getX();
+            rightClickY = e.getY();
+        }
     }
 
     @Override
