@@ -3,6 +3,7 @@ package chess;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 
@@ -14,6 +15,7 @@ public abstract class Piece {
     public int x, y;
     public int col, row, preCol, preRow;
     public Color color;
+    public int moveCount = 0;
 
     public Piece(int col, int row, Color color) {
         this.col = col;
@@ -55,5 +57,26 @@ public abstract class Piece {
 
     public int getRow() {
         return (this.y + ChessPanel.tileSize / 2) / ChessPanel.tileSize;
+    }
+
+    // Returns an 8x8 grid where true means the piece can legally move to that
+    // square
+    public abstract boolean[][] possibleMoves(ArrayList<Piece> pieces);
+
+    protected Piece getPieceAt(int col, int row, ArrayList<Piece> pieces) {
+        for (Piece p : pieces) {
+            if (p.col == col && p.row == row) {
+                return p;
+            }
+        }
+        return null;
+    }
+
+    // True if the square is in bounds and not occupied by a friendly piece
+    protected boolean canMoveTo(int col, int row, ArrayList<Piece> pieces) {
+        if (col < 0 || col > 7 || row < 0 || row > 7)
+            return false;
+        Piece target = getPieceAt(col, row, pieces);
+        return target == null || target.color != this.color;
     }
 }

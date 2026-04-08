@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import javax.swing.JPanel;
 
 import chess.Color;
+import chess.GameState;
 import chess.Piece;
 import chess.pieces.Bishop;
 import chess.pieces.King;
@@ -36,6 +37,10 @@ public class ChessPanel extends JPanel implements Runnable {
     public static ArrayList<Piece> pieces = new ArrayList<>();
     public static ArrayList<Piece> simPieces = new ArrayList<>();
     Piece activeP;
+
+    // GAME STATE
+    boolean gameOver = false;
+    String gameResult = "";
 
     public ChessPanel() {
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
@@ -128,40 +133,58 @@ public class ChessPanel extends JPanel implements Runnable {
     }
 
     public void update() {
+        if (gameOver)
+            return;
+
         // MOUSE PRESSED
         if (mouse.pressed) {
             if (activeP == null) {
-                Piece foundPiece = null;
-
                 for (Piece piece : simPieces) {
                     if (piece.color == currentColor
                             && piece.col == mouse.x / tileSize
                             && piece.row == mouse.y / tileSize) {
-
-                        foundPiece = piece;
+                        // Bring selected piece to top of draw order
+                        simPieces.remove(piece);
+                        simPieces.add(piece);
+                        activeP = piece;
                         break;
                     }
                 }
-
-                // Put the selected piece to the end of the list so it wont be hidden by other
-                // pieces
-                if (foundPiece != null) {
-                    simPieces.remove(foundPiece);
-                    simPieces.add(foundPiece);
-                    activeP = foundPiece;
-                }
-
             } else {
                 simulate();
             }
         }
 
         // MOUSE RELEASE
-        if (!mouse.pressed) {
-            if (activeP != null) {
+        if (!mouse.pressed && activeP != null) {
+            int targetCol = activeP.col;
+            int targetRow = activeP.row;
+
+            if (isMoveValid(targetCol, targetRow)) {
+                // Capture enemy piece if present
+                Piece captured = getPieceAt(targetCol, targetRow);
+                if (captured != null) {
+                    simPieces.remove(captured);
+                }
+                // Commit the move
+                activeP.preCol = targetCol;
+                activeP.preRow = targetRow;
                 activeP.x = activeP.getPosX();
                 activeP.y = activeP.getPosY();
+                activeP.moveCount++;
+                copyPieces(simPieces, pieces);
+                switchTurn();
+                checkGameOver();
+            } else {
+                // Invalid move — reset to origin
+                activeP.col = activeP.preCol;
+                activeP.row = activeP.preRow;
+                activeP.x = activeP.getPosX();
+                activeP.y = activeP.getPosY();
+                copyPieces(pieces, simPieces);
             }
+
+            activeP = null;
         }
     }
 
@@ -170,6 +193,53 @@ public class ChessPanel extends JPanel implements Runnable {
         activeP.y = mouse.y - tileSize / 2;
         activeP.col = activeP.getCol();
         activeP.row = activeP.getRow();
+    }
+
+    private Piece getPieceAt(int col, int row) {
+        for (Piece p : simPieces) {
+            if (p.col == col && p.row == row) {
+                return p;
+            }
+        }
+        return null;
+    }
+
+    private boolean isMoveValid(int targetCol, int targetRow) {
+        // Must actually move
+        if (targetCol == activeP.preCol && targetRow == activeP.preRow)
+            return false;
+        // Must stay on board
+        if (targetCol < 0 || targetCol > 7 || targetRow < 0 || targetRow > 7)
+            return false;
+        // Cannot land on a friendly piece
+        Piece target = getPieceAt(targetCol, targetRow);
+        if (target != null && target.color == activeP.color)
+            return false;
+
+        // Temporarily restore piece to its origin so legal moves are computed correctly
+        activeP.col = activeP.preCol;
+        activeP.row = activeP.preRow;
+        boolean valid = GameState.generateLegalMoves(activeP, simPieces)[targetCol][targetRow];
+        // Restore to target position
+        activeP.col = targetCol;
+        activeP.row = targetRow;
+
+        return valid;
+    }
+
+    private void checkGameOver() {
+        if (GameState.isCheckmate(currentColor, pieces)) {
+            String winner = (currentColor == Color.WHITE) ? "Black" : "White";
+            gameResult = winner + " wins by checkmate!";
+            gameOver = true;
+        } else if (GameState.isStalemate(currentColor, pieces)) {
+            gameResult = "Stalemate — it's a draw!";
+            gameOver = true;
+        }
+    }
+
+    private void switchTurn() {
+        currentColor = (currentColor == Color.WHITE) ? Color.BLACK : Color.WHITE;
     }
 
     public void paintComponent(Graphics g) {
@@ -196,10 +266,38 @@ public class ChessPanel extends JPanel implements Runnable {
                 g2.drawRect(activeP.col * tileSize + 2, activeP.row * tileSize + 3, tileSize - 5, tileSize - 5);
             }
 
-            // TODO: Mark the possibles moves for the current piece
+            // TODO: Mark the possible moves for the current piece
 
             boardUI.drawPiece(g2, activeP);
         }
 
+        if (gameOver) {
+            drawGameOverOverlay(g2);
+        }
+
+    }
+
+    private void drawGameOverOverlay(Graphics2D g2) {
+        // Dim the board
+        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.65f));
+        g2.setColor(java.awt.Color.BLACK);
+        g2.fillRect(0, 0, tileSize * 8, tileSize * 8);
+        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
+
+        // Result text
+        g2.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 44));
+        java.awt.FontMetrics fm = g2.getFontMetrics();
+        int x = (tileSize * 8 - fm.stringWidth(gameResult)) / 2;
+        int y = tileSize * 4 - 10;
+        g2.setColor(java.awt.Color.YELLOW);
+        g2.drawString(gameResult, x, y);
+
+        // Sub-text
+        String sub = "New Game coming in Phase 5";
+        g2.setFont(new java.awt.Font("Arial", java.awt.Font.PLAIN, 18));
+        fm = g2.getFontMetrics();
+        x = (tileSize * 8 - fm.stringWidth(sub)) / 2;
+        g2.setColor(java.awt.Color.LIGHT_GRAY);
+        g2.drawString(sub, x, y + 44);
     }
 }
