@@ -5,6 +5,10 @@ bibliotecas de terceiros, sem framework de UI além do Swing da própria JDK. To
 as regras oficiais, a geração de lances legais, a detecção de xeque-mate, a
 notação algébrica e a exportação em PGN foram implementadas do zero.
 
+> **Sobre o nome:** o bot com IA (Minimax com poda alfa-beta) ainda não existe — é o
+> próximo passo. Hoje o repositório tem a engine de regras e a interface para dois
+> jogadores locais. Ver [Estado do projeto](#estado-do-projeto).
+
 ## O que está implementado
 
 **Regras completas.** Movimentação e captura de todas as peças, **roque** (curto e
@@ -65,7 +69,7 @@ java-chess-engine/
 ## Estado do projeto
 
 A **engine e a interface estão completas e jogáveis** para partidas de dois
-jogadores locais (~1.900 linhas de Java).
+jogadores locais.
 
 O que ainda **não** existe:
 
